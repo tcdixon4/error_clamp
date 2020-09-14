@@ -20,23 +20,20 @@ function [reach_angle_vec] = sim_quantal_model(ec_mag)
 % runtime settable variables
 quantum = 1;
 
-mu_detect = 1;
-sigma_detect = 4;
+mu_detect = 5;
+sigma_detect = 1.5;
 mu_attend = 0.75;
 sigma_attend = 0.05;
 
 % define probability of error detection, which is constant in error clamp
-p_detect = (normcdf(ec_mag, mu_detect, sigma_detect)-0.5)*2;
-H = ones(100,1);
+p_detect = (normcdf(ec_mag, mu_detect, sigma_detect));
+H = ones(20,1);
 
 % set up time series vectors for the stochastic processes and the resulting
 % reach angles on each trial
 error_detect_vec = zeros(500,1);
 error_attend_vec = zeros(500,1);
 reach_angle_vec = zeros(500,1);
-
-is_error = 0;
-is_update = 0;
 
 
 % iterate over all reaches to simulate a single time series
@@ -50,7 +47,7 @@ for trial = 1:499
     % if there was an error detected, determine whether an update will be
     % made
     if is_error
-        is_update = rand() < normcdf(mean(H), mu_attend, sigma_attend);
+        is_update = rand() < mean(H);
     else
         is_update = 0;
     end
@@ -66,14 +63,14 @@ for trial = 1:499
     end
     
 end
-
-%% plot
-title_text = {strcat('\mu =', num2str(mu_attend)), ...
-    strcat('\sigma =', num2str(sigma_attend))};
-plot(reach_angle_vec(1:500))
-ylabel('Error')
-xlabel('Trial #')
-title(title_text)
+% 
+% %% plot
+% title_text = {strcat('\mu =', num2str(mu_attend)), ...
+%     strcat('\sigma =', num2str(sigma_attend))};
+% plot(reach_angle_vec(1:500))
+% ylabel('Error')
+% xlabel('Trial #')
+% title('Linear, max 20')
 
 end
 

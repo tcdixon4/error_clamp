@@ -1,4 +1,5 @@
-function [reach_angle_vec] = sim_quantal_model(ec_mag)
+function [reach_angle_vec, belief_vec, is_error_vec, is_update_vec] = ...
+    sim_quantal_model(ec_mag)
 
 % this stochastic model simulates the behavior on a single session of
 % visuomotor rotation adaptation. the same model can be used to predict
@@ -20,13 +21,13 @@ function [reach_angle_vec] = sim_quantal_model(ec_mag)
 % runtime settable variables
 quantum = 1;
 
-mu_detect = 2;
-sigma_detect = 5;
+mu_detect = 5;
+sigma_detect = 1.5;
 mu_attend = 0.75;
 sigma_attend = 0.05;
 
 % define probability of error detection, which is constant in error clamp
-p_detect = (normcdf(ec_mag, mu_detect, sigma_detect)-0.5)*2;
+p_detect = normcdf(ec_mag, mu_detect, sigma_detect);
 H = ones(20,1);
 
 % set up time series vectors for the stochastic processes and the resulting
@@ -34,12 +35,17 @@ H = ones(20,1);
 error_detect_vec = zeros(500,1);
 error_attend_vec = zeros(500,1);
 reach_angle_vec = zeros(500,1);
+belief_vec = zeros(500,1);
+is_error_vec = zeros(500,1);
+is_update_vec = zeros(500,1);
 
 
 % iterate over all reaches to simulate a single time series
 % this may be vectorized in the future, but the for-loop makes the process
 % more interpretable anyway
 for trial = 1:499
+    
+    belief_vec(trial) = mean(H);
     
     % determine whether an error was detected on the current trial
     is_error = rand() < p_detect;
@@ -51,6 +57,7 @@ for trial = 1:499
     else
         is_update = 0;
     end
+    is_error_vec(trial) = is_error;
     
     % if there was an update, change the behavior on the next trial and
     % add to the history that there was an ineffective update
@@ -61,6 +68,7 @@ for trial = 1:499
     else
         reach_angle_vec(trial+1) = reach_angle_vec(trial);
     end
+    is_update_vec(trial) = is_update;
     
 end
 % 
